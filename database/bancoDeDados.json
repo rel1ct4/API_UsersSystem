@@ -1,0 +1,72 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "João Silva",
+      "email": "joao@email.com",
+      "password": "hashed_password_123"
+    },
+    {
+      "id": 2,
+      "name": "Maria Oliveira",
+      "email": "maria@email.com",
+      "password": "hashed_password_456"
+    },
+    {
+      "id": "1746618058206",
+      "name": "millena",
+      "email": "millena@gmail.com",
+      "password": "05122022"
+    },
+    {
+      "id": "1746620905139",
+      "name": "millena",
+      "email": "millena@gmail.com",
+      "password": "05122022"
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "Meu primeiro post",
+      "content": "Este é o conteúdo do post.",
+      "createdAt": "2025-05-06T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "title": "Post da Maria",
+      "content": "Olá! Esse é meu post.",
+      "createdAt": "2025-05-06T11:00:00Z"
+    },
+    {
+      "id": "1746618325423",
+      "userid": 1,
+      "title": "Novo post",
+      "content": "Conteúdo do post"
+    },
+    {
+      "id": "1746620957795",
+      "userid": 1,
+      "title": "Novo post",
+      "content": "Conteúdo do post"
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "postId": 1,
+      "userId": 2,
+      "comment": "Muito bom o post!",
+      "createdAt": "2025-05-06T11:30:00Z"
+    },
+    {
+      "id": 2,
+      "postId": 2,
+      "userId": 1,
+      "comment": "Obrigado por compartilhar!",
+      "createdAt": "2025-05-06T12:00:00Z"
+    }
+  ]
+}
