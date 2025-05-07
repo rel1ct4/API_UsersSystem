@@ -14,8 +14,7 @@ Permitir que usuários comentem em posts de outros usuários.
 Possibilitar a visualização de feeds personalizados e exclusão de dados
 relacionados.
 
-## 🔗 3.
-Endpoints da API
+## 🔗 3. Endpoints da API
 
 1. GET /users
 Pontuação: 0,33
