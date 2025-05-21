@@ -1,235 +1,182 @@
 import express from "express";
 import cors from "cors";
-import nodemon from "nodemon";
-import fs from "node:fs"
+import { promises as fs } from "fs"; 
 
 const PORT = 3333
-const app = express()
-const url_database = "./database/bancoDeDados.json"
+const url_database = "./database/biblioteca.json"
 
+const app = express()
 app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }))
+
 app.use(express.json())
 
-app.listen(PORT, () => {
-    console.log("Servidor funcionando no link 'http://localhost:3333")
-});
+//concluido 2/31
 
-app.get("/users", (req, res) => {
-    fs.readFile(url_database, 'utf-8', (err, data) => {
-            if (err) {
-                res.status(500).json({ mensagem: "Erro ao ler arquivo" })
-                return
-            }
-    
-            const usuarios = JSON.parse(data)
-    
-            if (!usuarios) {
-                res.status(200).json({ mensagem: "Nenhum usuario encontrado", data: [] })
-                return
-            }
-    
-            res.status(200).json({ mensagem: "Lista de usuarios", data: usuarios.users })
-        })
+//lista todos
 
-})
+app.get("/biblioteca/livros", async(req, res) => {
+    //lista de livros da biblioteca
+    try {
+        const data = await fs.readFile(url_database,'utf-8')
+        const database = await JSON.parse(data)
 
-app.post("/users", (req, res)=>{
-    const {name, email, password} = req.body
-
-if(!name || typeof name !== 'string' || name.trim() === ""){
-    res
-    .status(400)
-    .json({menssagem: "O campo 'nome' é obrigatorio e deve ser um texto"})
-    return;
-}
-
-if(!email || typeof email !== 'string' || email.trim() === ""){
-    res
-    .status(400)
-    .json({menssagem: "O campo 'email' é obrigatorio e deve ser um texto"})
-    return;
-}
-
-if(!password || typeof password !== 'string' || password.trim() === ""){
-    res
-    .status(400)
-    .json({menssagem: "O campo 'email' é obrigatorio e deve ser um texto"})
-    return;
-}
-
-
-
-
- fs.readFile(url_database, 'utf-8', (err, data)=>{
-    if(err){
-        res.status(500).json({mensagem: "Erro ao ler arquivo"})
-        return
-    }
-
-    const usuarios = JSON.parse(data);
-
-    if (!usuarios.users) {
-        usuarios.users = [];
-    }
-
-    const novoUsuario = {
-        id: Date.now().toString(),
-        name,
-        email,
-        password
-    };
-
-    usuarios.users.push(novoUsuario);
-
-        fs.writeFile(url_database, JSON.stringify(usuarios, null, 2), (err) => {
-        if (err) {
-            res.status(500).json({ mensagem: "Erro ao cadastrar usuario" })
+        if(database.livros.length === 0){
+            res.status(200).json({mensagem: "Nenhum livro cadastrado!"})
             return
         }
-        res.status(201).json({ mensagem: "Usuario cadastrado", data: novoUsuario })
-    })
-})
-})
 
-app.post("/posts", (req, res) => {
-    const {userid, title, content} = req.body
-
-    if(!userid){
-        res
-        .status(400)
-        .json({menssagem: "O campo 'userid' é obrigatorio"})
-        return;
-    }
-    
-    if(!title || typeof title !== 'string' || title.trim() === ""){
-        res
-        .status(400)
-        .json({menssagem: "O campo 'title' é obrigatorio e deve ser um texto"})
-        return;
-    }
-    
-    if(!content || typeof content !== 'string' || content.trim() === ""){
-        res
-        .status(400)
-        .json({menssagem: "O campo 'content' é obrigatorio e deve ser um texto"})
-        return;
-    }
-    
-    
-    
-    
-     fs.readFile(url_database, 'utf-8', (err, data)=>{
-        if(err){
-            res.status(500).json({mensagem: "Erro ao ler arquivo"})
-            return
-        }
-    
-        const Postagens = JSON.parse(data)
-
-        if(!Postagens.posts){
-            Postagens.posts = [];
-        }
-    
-        const novoPost = {
-            id: Date.now().toString(),
-            userid,
-            title,
-            content
-           
-        };
-
-    
-            Postagens.posts.push(novoPost);
-    
-            fs.writeFile(url_database, JSON.stringify(Postagens, null, 2), (err) => {
-            if (err) {
-                res.status(500).json({ mensagem: "Erro ao criar um post" })
-                return
-            }
-            res.status(201).json({ mensagem: "Post na internet ", data: novoPost })
-        })
-    })
-});
-
-app.get("/posts/:id/comments", (req, res) => {
-    const {id} = req.params
-    const {comments} = req.params
+        res.status(200).json({mensagem: "Lista de livros cadastrados:", data: database.livros})
         
-    fs.readFile(url_database, 'utf-8', (err, data) => {
-        if (err) {
-            res.status(500).json({ mensagem: "Erro ao ler arquivo" })
-            return
-        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({mensagem: "Internal server error!"})
 
-        const usuarios = JSON.parse(data)
-
-        const indexUsuarios = usuarios.findIndex((usuarios) => usuarios.id === id)
-
-        if(indexUsuarios === -1){
-            res.status(404).json({mensagem: "Usuário não encontrado"})
-            return
-        }
-
-        if (!usuarios) {
-            res.status(200).json({ mensagem: "Esse post não teve nenhum comentário", data: [] })
-            return
-        }
-        res.status(200).json({ mensagem: "comentários", data: usuarios.id.comments })
-    })
+    }
 });
 
-app.get("/users/:id/feed", (req, res) => {
-   
-    fs.readFile(url_database, 'utf-8', (err, data) => {
-        if (err) {
-            res.status(500).json({ mensagem: "Erro ao ler arquivo" })
+app.get("/biblioteca/usuarios", async(req, res) => {
+    //lista de usuarios cadastrados
+    try {
+        const data = await fs.readFile(url_database, 'utf-8')
+        const database = await JSON.parse(data)
+
+        if(database.users.length === 0){
+            res.status(200).json({mensagem: "Nenhum usuário cadastrado!"})
             return
         }
 
-        const usuarios = JSON.parse(data)
+        res.status(200).json({mensagem: "Lista de usuários cadastrados:", data: database.users})
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({mensagem: "Internal server error"})
+    }
+});
 
-        if (!usuarios) {
-            res.status(200).json({ mensagem: "Esse usuário não tem nenhum post", data: [] })
-            return
+app.get("/biblioteca/emprestimos", async(req, res) => {
+    //lista de emprestimos 
+    try {
+        const data = await fs.readFile(url_database, 'utf-8')
+        const database = await JSON.parse(data)
+
+        const livrosEmprestimo = database.livros.status.filter((status) => status === "ativo")
+        if(livrosEmprestimo.length === 0){
+            res.status(200).json({mensagem: "Nenhum livro disponivel para emprestimo no momento, tente reservar algum!"})
         }
-       
-        res.status(200).json({ mensagem: "feed", data: usuarios.posts })
-        console.log(data)
-    })
+
+        res.status(200).json({mensagem: "Lista de livros emprestados:"})
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({mensagem: "Internal server error!"})
+    }
+});
+
+app.get("/biblioteca/reservas", async(req, res) => {});
+
+app.get("/biblioteca/multas", async(req, res) => {});
+
+//cria todos
+
+app.post("/biblioteca/usuarios/cadastro", async(req, res) => {});
+
+app.post("/biblioteca/livros/cadastro", async(req, res) => {});
+
+app.post("/biblioteca/emprestimos", async(req, res) => {});
+
+app.post("/biblioteca/reservas", async(req, res) => {});
+
+app.post("/biblioteca/multas/registrar/:emprestimoId", async(req, res) => {});
+
+//lista um em especifico
+
+app.get("/biblioteca/usuarios/:id", (req, res) => {});
+
+app.get("/biblioteca/livros/:id", (req, res) => {});
+
+app.get("/biblioteca/emprestimos/:id", (req, res) => {});
+
+app.get("/biblioteca/reservas/:id", (req, res) => {});
+
+app.get("/biblioteca/multas/:emprestimoId", (req, res) => {});
+
+//atualiza as informações de determinado item
+
+app.put("/biblioteca/usuarios/:id", (req, res) => {});
+
+app.put("/biblioteca/livros/:id", (req, res) => {});
+
+app.put("/biblioteca/emprestimos/:id/devolucao", (req, res) => {});
+
+app.put("/biblioteca/multas/:id/pagar", (req, res) => {});
+
+app.put("/biblioteca/reservas/:id", (req, res) => {});
+
+//deletar um item
+
+app.delete("/biblioteca/usuarios/:id", (req, res) => {});
+
+app.delete("/biblioteca/livros/:id", (req, res) => {});
+
+app.delete("/biblioteca/emprestimos/:id/devolucao", (req, res) => {});
+
+app.delete("/biblioteca/multas/:id/pagar", (req, res) => {});
+
+app.delete("/biblioteca/reservas/:id", (req, res) => {});
+
+//outras funções de listagem especifica ou não
+
+app.get("/biblioteca/emprestimos/:id", (req, res) => {});
+
+app.get("/biblioteca/emprestimos/usuario/:id", (req, res) => {});
+
+app.get("/biblioteca/emprestimos/pendentes", (req, res) => {});
+
+app.get("/biblioteca/reservas/usuario/:id", (req, res) => {});
+
+app.get("/biblioteca/reservas/disponiveis/:idLivro", (req, res) => {});
+
+app.get("/biblioteca/livros/busca", async (req, res) => {
+  // Acesse os parâmetros de query string via req.query
+  const { titulo, autor, categoria, ISBN } = req.query;
+
+  try {
+    const data = await fs.readFile(url_database, 'utf-8');
+    const database = JSON.parse(data);
+    let livrosFiltrados = database.livros;
+
+    if (titulo) {
+      livrosFiltrados = livrosFiltrados.filter(livro => livro.titulo.toLowerCase().includes(titulo.toLowerCase()));
+    }
+    if (autor) {
+      livrosFiltrados = livrosFiltrados.filter(livro => livro.autor.toLowerCase().includes(autor.toLowerCase()));
+    }
+    if (categoria) {
+      livrosFiltrados = livrosFiltrados.filter(livro => livro.categoria.toLowerCase().includes(categoria.toLowerCase()));
+    }
+    if (ISBN) {
+      livrosFiltrados = livrosFiltrados.filter(livro => livro.ISBN.includes(ISBN));
+    }
+
+    if (livrosFiltrados.length === 0) {
+      return res.status(200).json({ mensagem: "Nenhum livro encontrado com os critérios fornecidos." });
+    }
+
+    res.status(200).json({ mensagem: "Livros encontrados", data: livrosFiltrados });
+
+  } catch (error) {
+    console.error(error); // Use console.error para erros
+    res.status(500).json({ mensagem: "Erro interno do servidor ao buscar livros." });
+  }
+});
+
+app.get("/biblioteca/multas/usuario/:id", (req, res) => {});
+
+
+app.listen(PORT, () => {
+    console.log("Servidor iniciado na porta: " + PORT)
 })
-
-
-app.delete("/users/:id", (req, res) => {
-    const {id} = req.params
-
-    fs.readFile(url_database, "utf-8", (err, data) => {
-        if(err){
-            res.status(500).json({mensagem: "Erro ao ler arquivo"})
-            return
-        }
-         
-        const usuarios = JSON.parse(data)
-        console.log(usuarios)
-        const indexUsuarios = usuarios.findIndex((usuarios) => usuarios.id === id)
-
-        if(indexUsuarios === -1){
-            res.status(404).json({mensagem: "Usuário não encontrado"})
-            return
-        }
-
-        const usuarioRemovido = usuarios.splice(indexUsuarios, 1)[0]
-
-        fs.writeFile(url_database, JSON.stringify(usuarios, null, 2), (err) => {
-            if(err){
-                console.log(err)
-                res.status(500).json({mensagem: "Erro ao salvar arquivo"})
-                return
-            }
-            res.status(200).json({mensagem: "Usuário e dados relacionados removidos com sucesso", data: usuarioRemovido})
-        })
-    })
-});
